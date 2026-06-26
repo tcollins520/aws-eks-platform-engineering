@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: usermgmt
+  labels:
+    app.kubernetes.io/name: usermgmt
+    app.kubernetes.io/instance: usermgmt
+    app.kubernetes.io/component: service
+    app.kubernetes.io/owner: usermgmt-platform

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app.kubernetes.io/name: mysql
+    app.kubernetes.io/instance: mysql
+    app.kubernetes.io/component: database
+    app.kubernetes.io/owner: usermgmt-platform
+
+spec:
+  type: ExternalName
+  externalName: mydb101.cifguuuaskpf.us-east-1.rds.amazonaws.com
