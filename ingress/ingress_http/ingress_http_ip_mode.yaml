@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: usermgmt-ingress
+  labels:
+    app.kubernetes.io/name: usermgmt
+    app.kubernetes.io/instance: usermgmt
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/owner: usermgmt-platform
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: usermgmt-alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+
+    # Health Checks
+    alb.ingress.kubernetes.io/healthcheck-path: /usermgmt/health-status
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/success-codes: "200"
+
+spec:
+  ingressClassName: alb
+
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: usermgmt
+                port:
+                  number: 8095
