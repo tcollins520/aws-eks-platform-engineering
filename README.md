@@ -2,6 +2,14 @@
 
 Production-grade cloud-native platform on AWS demonstrating modern Platform Engineering practices using Terraform, Kubernetes, GitOps, Observability, and Progressive Delivery.
 
+Implemented an internal notification microservice on Amazon EKS using:
+- Amazon SES for outbound email delivery
+- AWS Secrets Manager for SMTP credentials
+- EKS Pod Identity for workload authentication
+- Secrets Store CSI Driver for secret synchronization
+- Internal ClusterIP service communication
+- Topology spread constraints and health probes
+
 ---
 
 ## Architecture Overview
