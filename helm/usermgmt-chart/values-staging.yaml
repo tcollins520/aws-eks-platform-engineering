@@ -1,0 +1,88 @@
+replicaCount: 2
+
+image:
+  repository: stacksimplify/kube-usermanagement-microservice
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: usermgmt
+
+service:
+  type: ClusterIP
+  port: 8095
+  targetPort: 8095
+# ----------------------------------------------------------------------------
+# HEALTH PROBES
+# ----------------------------------------------------------------------------
+probes:
+  readiness:
+    path: /usermgmt/health-status
+    port: 8095
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  liveness:
+    path: /usermgmt/health-status
+    port: 8095
+    initialDelaySeconds: 60
+    periodSeconds: 10
+
+# ----------------------------------------------------------------------------
+# SECURITY
+# ----------------------------------------------------------------------------
+containerSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+# ----------------------------------------------------------------------------
+# RESOURCE MANAGEMENT
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# DATABASE CONFIGURATION
+# MySQL RDS Database Endpoint and credentials will be injected via ConfigMap and Secrets
+# --------------------------------------------------------
+rds:
+  hostname: ""
+  port: 3306
+  serviceName: mysql
+
+# ----------------------------------------------------------------------------
+# AWS SECRETS MANAGER / CSI DRIVER
+# ----------------------------------------------------------------------------
+secrets:
+  secretProviderClass: usermgmt-db-secrets
+  awsSecretName: mysql-db-secret-1
+  k8sSecretName: usermgmt-db
+
+# ----------------------------------------------------------------------------
+# CONFIGMAP
+# ----------------------------------------------------------------------------
+config:
+  dbHostname: mysql
+  dbPort: "3306"
+  dbName: usermgmt
+  springProfile: mysqlaws
+  logLevel: INFO
+
+# ----------------------------------------------------------------------------
+# AUTOSCALING - HORIZONTAL POD AUTOSCALER (HPA)
+# ----------------------------------------------------------------------------
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
