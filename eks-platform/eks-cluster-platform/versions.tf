@@ -12,11 +12,11 @@ terraform {
 
   # Remote backend configuration using S3 
   backend "s3" {
-    bucket         = "tfstate-staging-us-east-1-g3c1r8"         
-    key            = "eks/staging/terraform.tfstate"            
-    region         = "us-east-1"                            
-    encrypt        = true                                   
-    use_lockfile   = true     
+    bucket       = "tfstate-staging-us-east-1-g3c1r8"
+    key          = "eks/staging/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }
 
