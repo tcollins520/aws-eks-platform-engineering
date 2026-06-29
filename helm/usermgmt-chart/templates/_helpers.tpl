@@ -58,9 +58,9 @@ ConfigMap
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "notification.serviceAccountName" -}}
+{{- define "usermgmt.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "notification.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "usermgmt.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
@@ -69,6 +69,6 @@ Create the name of the service account to use
 {{/*
 Pod Annotations
 */}}
-{{- define "notification.podAnnotations" -}}
+{{- define "usermgmt.podAnnotations" -}}
 {{- toYaml .Values.podAnnotations }}
 {{- end }}

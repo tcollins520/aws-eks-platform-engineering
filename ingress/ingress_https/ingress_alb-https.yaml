@@ -2,10 +2,12 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: retail-store-https-ip-mode
+  name: usermgmt-https-ingress-alb
   annotations:
+    # ExternalDNS
+    external-dns.alpha.kubernetes.io/hostname: usermgmt.tinacloud.dev
     # Load Balancer Name
-    alb.ingress.kubernetes.io/load-balancer-name: retail-store-https-ip-mode
+    alb.ingress.kubernetes.io/load-balancer-name: usermgmt-alb-https
     # Ingress Core Settings
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
@@ -20,14 +22,21 @@ metadata:
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     ## SSL Settings
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:162663626265:certificate/5f4c5335-71d3-4b38-854b-ba515cf65668
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:162663626265:certificate/a4eb55e2-32e6-4241-8775-262a19640c13
     # SSL Redirect Setting
     alb.ingress.kubernetes.io/ssl-redirect: '443'        
 spec:
-  ingressClassName: alb 
-  defaultBackend:
-    service:
-      name: ui
-      port:
-        number: 80                  
+  ingressClassName: alb
+
+  rules:
+    - host: usermgmt.tinacloud.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: usermgmt
+                port:
+                  number: 8095              
       
