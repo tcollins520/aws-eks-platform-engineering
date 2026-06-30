@@ -8,7 +8,7 @@ cluster_endpoint_private_access = true
 cluster_endpoint_public_access = false
 cluster_endpoint_public_access_cidrs = ["10.0.0.0/8"]
 
-node_instance_types = ["t3.medium"]
+node_instance_types = ["t3.large"]
 node_capacity_type  = "ON_DEMAND"
 node_disk_size      = 30
 

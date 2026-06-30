@@ -75,8 +75,18 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 # ----------------------------------------------------------------------------
-# NODE SELECTION
+# POD DISRUPTION BUDGET (PDB) 
 # ----------------------------------------------------------------------------
+# Maintain minimum availability during voluntary disruptions (node drains, etc.)
+podDisruptionBudget:
+  enabled: true # set to true to enable Pod Disruption Budget. If enabled, it will ensure that at least 2 pods are always available during voluntary disruptions (like node drains).
+  # Keep at least two pods available during upgrades
+  minAvailable: 2
+
+# ----------------------------------------------------------------------------
+# KARPENTER NODE SELECTION
+# ----------------------------------------------------------------------------
+# Schedule pods on Karpenter On-Demand nodes for stability
 nodeSelector: {}
 
 tolerations: []

@@ -87,9 +87,22 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
+# ---------------------------------------------------------
+# POD DISRUPTION BUDGET (PDB)
+# Prevents voluntary disruptions from taking down too many
+# replicas during node upgrades, Karpenter consolidation,
+# or node maintenance.
+# ---------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+
+  # Keep at least two replicas available
+  minAvailable: 2
+
 # ----------------------------------------------------------------------------
-# NODE SELECTION
+# KARPENTER NODE SELECTION
 # ----------------------------------------------------------------------------
+# Schedule pods on Karpenter On-Demand nodes for stability
 nodeSelector: {}
 
 tolerations: []
