@@ -44,10 +44,10 @@ probes:
 resources:
   requests:
     cpu: 250m
-    memory: 768Mi
-  limits:
-    cpu: 1000m
     memory: 1Gi
+  limits:
+    cpu: "1"
+    memory: 1.5Gi
 
 # ----------------------------------------------------------------------------
 # AWS SECRETS MANAGER / CSI DRIVER
@@ -105,7 +105,7 @@ podAnnotations:
 # OPENTELEMETRY INSTRUMENTATION
 # ----------------------------------------------------------------------------
 opentelemetry:
-  enabled: false
+  enabled: true
   instrumentation: ""
 
 # ----------------------------------------------------------------------------
