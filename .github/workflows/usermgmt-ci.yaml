@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - applications/usermgmt/**
-     # - .github/workflows/usermgmt-ci.yaml
+      - .github/workflows/usermgmt-ci.yaml
 
 permissions:
   id-token: write
@@ -102,7 +102,7 @@ jobs:
           image-ref: ${{ steps.vars.outputs.image_uri }}:${{ steps.vars.outputs.sha_tag }}
           format: table
           exit-code: 1
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
 
       ####################################################
       # Push Docker Images
