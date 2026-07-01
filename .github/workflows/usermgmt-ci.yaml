@@ -1,0 +1,175 @@
+name: UserMgmt CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - applications/usermgmt/**
+     # - .github/workflows/usermgmt-ci.yaml
+
+permissions:
+  id-token: write
+  contents: write
+
+##################################################################################################################
+# ENABLES CI OPTIMIZATION BY CANCELING IN-PROGRESS RUNS AND ONLY BUILDING THE LATEST COMMIT
+##################################################################################################################
+concurrency:
+  group: usermgmt-ci
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: usermgmt_img
+
+jobs:
+
+#########################################################
+# BUILD AND PUBLISH CONTAINER
+#########################################################
+
+  build:
+
+    name: Build & Publish Image
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      image-tag: ${{ steps.vars.outputs.sha_tag }}
+      image-uri: ${{ steps.vars.outputs.image_uri }}
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::162663626265:role/github-actions-oidc-role-usermgmt
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set Image Variables
+        id: vars
+        run: |
+
+          SHA_TAG=sha-${GITHUB_SHA::7}
+          IMAGE_URI=${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+
+          echo "sha_tag=$SHA_TAG" >> $GITHUB_OUTPUT
+          echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      ####################################################
+      # Docker Buildx to enable multi-platform builds
+      ####################################################
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      ####################################################
+      # Helm Validation for Chart Linting
+      ####################################################
+
+      - name: Helm Lint
+        run: |
+
+          helm lint helm/usermgmt-chart
+
+      ####################################################
+      # Build Docker Image
+      ####################################################
+
+      - name: Build Docker Image
+        run: |
+
+          docker build \
+            -t ${{ steps.vars.outputs.image_uri }}:latest \
+            -t ${{ steps.vars.outputs.image_uri }}:${{ steps.vars.outputs.sha_tag }} \
+            applications/usermgmt
+
+      ####################################################
+      # Trivy Scan for Vulnerabilities
+      ####################################################
+
+      - name: Scan Docker Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.vars.outputs.image_uri }}:${{ steps.vars.outputs.sha_tag }}
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
+
+      ####################################################
+      # Push Docker Images
+      ####################################################
+
+      - name: Push Docker Images
+        run: |
+
+          docker push ${{ steps.vars.outputs.image_uri }}:latest
+          docker push ${{ steps.vars.outputs.image_uri }}:${{ steps.vars.outputs.sha_tag }}
+
+###########################################################################
+# UPDATE GITOPS REPOSITORY WITH NEW IMAGE TAG FOR ARGO CD RECONCILIATION
+###########################################################################
+
+  gitops:
+
+    name: Update GitOps Repository
+
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: tcollins520/aws-eks-platform-engineering_argocd-gitops
+          ref: main
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
+
+      - name: Update Helm Values
+        run: |
+
+          cd gitops
+
+          sed -i \
+          "s|tag: .*|tag: ${{ needs.build.outputs.image-tag }}|" \
+          helm/usermgmt-chart/values.yaml
+
+      - name: Commit Changes
+
+        run: |
+
+          cd gitops
+
+          git config user.name "Platform Engineering Bot"
+          git config user.email "platform@tinacloud.dev"
+
+          git add .
+
+          if ! git diff --cached --quiet; then
+
+            git commit \
+              -m "ci(usermgmt): update image tag to ${{ needs.build.outputs.image-tag }}"
+
+            git push
+
+          else
+
+            echo "GitOps already up to date"
+
+      - name: Complete
+
+        run: |
+
+          echo "GitOps repository updated."
+          echo "Argo CD will reconcile automatically."
