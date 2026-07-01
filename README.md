@@ -59,6 +59,17 @@ The platform focuses on:
 * Secrets Store CSI Driver
 * ExternalDNS
 
+## GitOps
+
+- Argo CD v3.4.4
+- Installed via Helm
+- ALB Ingress Controller
+- ACM TLS Certificate
+- ExternalDNS Integration
+- Route53 Custom Domain
+- Argo CD CLI
+
+
 ### GitOps & Delivery
 
 * ArgoCD
